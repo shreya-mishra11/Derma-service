@@ -9,7 +9,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "db": "json-server --watch db/products.json --port 3001",
+    "dev:full": "concurrently \"npm run dev\" \"npm run db\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -24,6 +26,8 @@
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.6.2",
+    "concurrently": "^9.2.1",
+    "json-server": "^1.0.0-beta.3",
     "nodemon": "^3.1.10",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.7.0",

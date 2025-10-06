@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Wireless Bluetooth Headphones",
+    "description": "Noise-cancelling over-ear headphones with 30 hours of playtime.",
+    "price": 2499,
+    "currency": "INR",
+    "category": "Electronics",
+    "image": "https://example.com/images/headphones.jpg",
+    "rating": 4.5,
+    "stock": 23,
+    "brand": "SoundMagic",
+    "discount": 10,
+    "createdAt": "2025-09-01T10:30:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Cotton Oversized T-Shirt",
+    "description": "Unisex oversized t-shirt made from 100% organic cotton.",
+    "price": 799,
+    "currency": "INR",
+    "category": "Fashion",
+    "image": "https://example.com/images/tshirt.jpg",
+    "rating": 4.2,
+    "stock": 50,
+    "brand": "UrbanThreads",
+    "discount": 5,
+    "createdAt": "2025-09-03T15:10:00Z"
+  },
+  {
+    "id": 3,
+    "name": "Smart Watch Series 6",
+    "description": "Fitness tracking, heart rate monitoring, and message notifications.",
+    "price": 8999,
+    "currency": "INR",
+    "category": "Wearables",
+    "image": "https://example.com/images/smartwatch.jpg",
+    "rating": 4.7,
+    "stock": 12,
+    "brand": "TechPro",
+    "discount": 15,
+    "createdAt": "2025-09-05T08:00:00Z"
+  },
+  {
+    "id": 4,
+    "name": "Ceramic Coffee Mug Set (Pack of 2)",
+    "description": "Matte-finish ceramic mugs ideal for hot and cold beverages.",
+    "price": 499,
+    "currency": "INR",
+    "category": "Home & Kitchen",
+    "image": "https://example.com/images/mugs.jpg",
+    "rating": 4.1,
+    "stock": 35,
+    "brand": "CasaCraft",
+    "discount": 0,
+    "createdAt": "2025-09-07T11:20:00Z"
+  },
+  {
+    "id": 5,
+    "name": "Laptop Backpack 25L",
+    "description": "Water-resistant backpack with laptop sleeve and USB charging port.",
+    "price": 1699,
+    "currency": "INR",
+    "category": "Accessories",
+    "image": "https://example.com/images/backpack.jpg",
+    "rating": 4.6,
+    "stock": 18,
+    "brand": "Skyline",
+    "discount": 20,
+    "createdAt": "2025-09-10T09:15:00Z"
+  }
+]
