@@ -175,3 +175,10 @@ export const createOrder = (cartId: string, customerInfo: any, paymentMethod: st
 export const getOrder = (orderId: string): Order | undefined => {
   return orders.get(orderId);
 };
+
+// Get all orders
+export const getAllOrders = (): Order[] => {
+  return Array.from(orders.values()).sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+};
