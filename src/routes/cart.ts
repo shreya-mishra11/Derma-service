@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { addToCart, removeFromCart, getOrCreateCart, createOrder } from '../store/cartStore.js';
+import { addToCart, removeFromCart, updateCartItem, getOrCreateCart, createOrder } from '../store/cartStore.js';
 import { AddToCartRequest, CheckoutRequest } from '../types/cart.js';
 import { cartMiddleware } from '../middlewares/cartMiddleware.js';
 
@@ -58,6 +58,49 @@ router.get('/', (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch cart'
+    });
+  }
+});
+
+// PATCH /api/cart/:itemId - Update item quantity in cart
+router.patch('/:itemId', (req: Request, res: Response) => {
+  try {
+    const cartId = req.cartId!;
+    const { itemId } = req.params;
+    const { quantity } = req.body;
+
+    if (!itemId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Item ID is required'
+      });
+    }
+
+    if (quantity === undefined || quantity === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity is required'
+      });
+    }
+
+    if (typeof quantity !== 'number' || quantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity must be a non-negative number'
+      });
+    }
+
+    const cart = updateCartItem(cartId, itemId, quantity);
+
+    res.json({
+      success: true,
+      data: cart,
+      message: quantity === 0 ? 'Item removed from cart successfully' : 'Item quantity updated successfully'
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to update item quantity'
     });
   }
 });

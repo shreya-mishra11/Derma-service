@@ -103,6 +103,38 @@ export const removeFromCart = (cartId: string, itemId: string): Cart => {
   return cart;
 };
 
+// Update item quantity in cart
+export const updateCartItem = (cartId: string, itemId: string, quantity: number): Cart => {
+  const cart = getOrCreateCart(cartId);
+  const itemIndex = cart.items.findIndex(item => item.id === itemId);
+
+  if (itemIndex === -1) {
+    throw new Error('Item not found in cart');
+  }
+
+  if (quantity <= 0) {
+    // If quantity is 0 or negative, remove the item
+    cart.items.splice(itemIndex, 1);
+  } else if (quantity > 10) {
+    throw new Error('Quantity cannot exceed 10');
+  } else {
+    // Check stock availability
+    const products = getProductsData();
+    const product = products.find((p: any) => p.id === cart.items[itemIndex].productId);
+    
+    if (product && product.stock < quantity) {
+      throw new Error('Insufficient stock');
+    }
+
+    cart.items[itemIndex].quantity = quantity;
+  }
+
+  updateCartTotals(cart);
+  cart.updatedAt = new Date().toISOString();
+
+  return cart;
+};
+
 // Update cart totals
 const updateCartTotals = (cart: Cart): void => {
   cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
