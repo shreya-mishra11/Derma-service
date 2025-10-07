@@ -11,6 +11,7 @@ export interface CartItem {
 
 export interface Cart {
   id: string;
+  userId?: string;
   items: CartItem[];
   totalItems: number;
   totalAmount: number;
@@ -37,6 +38,7 @@ export interface CheckoutRequest {
 export interface Order {
   id: string;
   cartId: string;
+  userId?: string;
   customerInfo: {
     name: string;
     email: string;

@@ -7,78 +7,41 @@ const router = Router();
 // Apply cart middleware to all routes
 router.use(cartMiddleware);
 
-// POST /api/orders - Create order from cart ID, single product, or multiple products
+// POST /api/orders - Create order for authenticated user's cart (accepts only paymentMethod)
 router.post('/', (req: Request, res: Response) => {
   try {
-    const { cartId, productId, quantity, items, paymentMethod, userId } = req.body;
+    const userSub = (req as any).user?.sub as string | undefined;
+    if (!userSub) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
 
-    // Validation
+    const { paymentMethod } = req.body as { paymentMethod: 'cash' | 'card' | 'upi' };
     if (!paymentMethod) {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment method is required'
-      });
+      return res.status(400).json({ success: false, message: 'Payment method is required' });
     }
-
     if (!['cash', 'card', 'upi'].includes(paymentMethod)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment method must be cash, card, or upi'
-      });
+      return res.status(400).json({ success: false, message: 'Payment method must be cash, card, or upi' });
     }
 
-    let orderCartId = cartId;
-
-    // If items array is provided (multiple products), build a temporary cart
-    if (Array.isArray(items) && items.length > 0 && !cartId) {
-      const tempCart = getOrCreateCart();
-      let cart = tempCart;
-      for (const entry of items) {
-        if (!entry?.productId || !entry?.quantity || entry.quantity <= 0) {
-          return res.status(400).json({
-            success: false,
-            message: 'Each item must include productId and positive quantity'
-          });
-        }
-        cart = addToCart(cart.id, Number(entry.productId), Number(entry.quantity));
-      }
-      orderCartId = cart.id;
-    // Else if productId+quantity provided, create a temporary cart with single product
-    } else if (productId && !cartId) {
-      if (!quantity || quantity <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Quantity is required when creating order from product ID'
-        });
-      }
-      const tempCart = getOrCreateCart();
-      const cart = addToCart(tempCart.id, Number(productId), Number(quantity));
-      orderCartId = cart.id;
-    } else if (!cartId) {
-      // Use current user's cart if no cartId provided
-      orderCartId = req.cartId!;
+    // Get the user's cart
+    const cart = getOrCreateCart(undefined, userSub);
+    if (!cart.items.length) {
+      return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    // Create order with minimal customer info (can be enhanced with user auth)
+    // Minimal customer info bound to user
     const customerInfo = {
-      name: userId ? `User ${userId}` : 'Guest User',
-      email: userId ? `user${userId}@example.com` : 'guest@example.com',
+      name: (req as any).user?.name || `User ${userSub}`,
+      email: (req as any).user?.email || `user${userSub}@example.com`,
       phone: '0000000000',
       address: 'Address not provided'
     };
 
-    const order = createOrder(orderCartId, customerInfo, paymentMethod);
+    const order = createOrder(cart.id, customerInfo, paymentMethod, userSub);
 
-    res.status(201).json({
-      success: true,
-      data: order,
-      message: 'Order created successfully'
-    });
+    return res.status(201).json({ success: true, data: order, message: 'Order created successfully' });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Failed to create order'
-    });
+    return res.status(400).json({ success: false, message: error instanceof Error ? error.message : 'Failed to create order' });
   }
 });
 

@@ -29,7 +29,8 @@ router.post('/', (req: Request, res: Response) => {
       });
     }
 
-    const cart = addToCart(cartId, productId, quantity);
+    const userId = (req as any).user?.sub as string | undefined;
+    const cart = addToCart(cartId, productId, quantity, userId);
 
     res.status(201).json({
       success: true,

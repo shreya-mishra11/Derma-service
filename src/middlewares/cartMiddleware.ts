@@ -5,13 +5,14 @@ import { getOrCreateCart } from '../store/cartStore.js';
 export const cartMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Priority: signed cookie -> header -> new cart
   const cookieCartId = (req.signedCookies && req.signedCookies.cartId) as string | undefined;
+  const userId = (req as any).user?.sub as string | undefined;
   const headerCartId = req.headers['x-cart-id'] as string | undefined;
 
   const incomingId = cookieCartId || headerCartId;
 
   if (incomingId) {
     try {
-      const cart = getOrCreateCart(incomingId);
+      const cart = getOrCreateCart(incomingId, userId);
       req.cartId = cart.id;
       // ensure cookie set
       res.cookie('cartId', cart.id, {
@@ -22,7 +23,7 @@ export const cartMiddleware = (req: Request, res: Response, next: NextFunction) 
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
     } catch (error) {
-      const newCart = getOrCreateCart();
+      const newCart = getOrCreateCart(undefined, userId);
       req.cartId = newCart.id;
       res.cookie('cartId', newCart.id, {
         httpOnly: true,
@@ -33,7 +34,7 @@ export const cartMiddleware = (req: Request, res: Response, next: NextFunction) 
       });
     }
   } else {
-    const newCart = getOrCreateCart();
+    const newCart = getOrCreateCart(undefined, userId);
     req.cartId = newCart.id;
     res.cookie('cartId', newCart.id, {
       httpOnly: true,

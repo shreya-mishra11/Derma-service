@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 
 // In-memory stores
 const carts = new Map<string, Cart>();
+const userIdToCartId = new Map<string, string>();
 const orders = new Map<string, Order>();
 
 // Get products data
@@ -25,7 +26,14 @@ export const generateCartId = (): string => {
 };
 
 // Get or create cart
-export const getOrCreateCart = (cartId?: string): Cart => {
+export const getOrCreateCart = (cartId?: string, userId?: string): Cart => {
+  if (userId) {
+    const existingCartId = userIdToCartId.get(userId);
+    if (existingCartId && carts.has(existingCartId)) {
+      return carts.get(existingCartId)!;
+    }
+  }
+
   if (cartId && carts.has(cartId)) {
     return carts.get(cartId)!;
   }
@@ -33,6 +41,7 @@ export const getOrCreateCart = (cartId?: string): Cart => {
   const newCartId = generateCartId();
   const newCart: Cart = {
     id: newCartId,
+    userId,
     items: [],
     totalItems: 0,
     totalAmount: 0,
@@ -42,12 +51,13 @@ export const getOrCreateCart = (cartId?: string): Cart => {
   };
 
   carts.set(newCartId, newCart);
+  if (userId) userIdToCartId.set(userId, newCartId);
   return newCart;
 };
 
 // Add item to cart
-export const addToCart = (cartId: string, productId: number, quantity: number): Cart => {
-  const cart = getOrCreateCart(cartId);
+export const addToCart = (cartId: string, productId: number, quantity: number, userId?: string): Cart => {
+  const cart = getOrCreateCart(cartId, userId);
   const products = getProductsData();
   const product = products.find((p: any) => p.id === productId);
 
@@ -142,8 +152,8 @@ const updateCartTotals = (cart: Cart): void => {
 };
 
 // Create order
-export const createOrder = (cartId: string, customerInfo: any, paymentMethod: string): Order => {
-  const cart = getOrCreateCart(cartId);
+export const createOrder = (cartId: string, customerInfo: any, paymentMethod: string, userId?: string): Order => {
+  const cart = getOrCreateCart(cartId, userId);
 
   if (cart.items.length === 0) {
     throw new Error('Cart is empty');
@@ -152,6 +162,7 @@ export const createOrder = (cartId: string, customerInfo: any, paymentMethod: st
   const order: Order = {
     id: randomUUID(),
     cartId,
+    userId: userId ?? cart.userId,
     customerInfo,
     items: [...cart.items],
     totalAmount: cart.totalAmount,

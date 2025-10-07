@@ -7,6 +7,7 @@ import productsRouter from './routes/products';
 import authRouter from './routes/auth';
 import cartRouter from './routes/cart';
 import ordersRouter from './routes/orders';
+import { authenticate } from './middlewares/authenticate';
 import { notFound, errorHandler } from './middlewares/errorHandler';
 
 const app = express();
@@ -25,9 +26,10 @@ app.use(cookieParser(process.env.COOKIE_SECRET || 'dev-secret'));
 // routes
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/products', productsRouter);
-app.use('/api/cart', cartRouter);
-app.use('/api/orders', ordersRouter);
+// protected
+app.use('/api/products', authenticate, productsRouter);
+app.use('/api/cart', authenticate, cartRouter);
+app.use('/api/orders', authenticate, ordersRouter);
 
 // 404 + error handler (should be after routes)
 app.use(notFound);
