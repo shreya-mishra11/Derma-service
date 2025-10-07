@@ -1,0 +1,145 @@
+import { Cart, CartItem, Order } from '../types/cart.js';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { randomUUID } from 'crypto';
+
+// In-memory stores
+const carts = new Map<string, Cart>();
+const orders = new Map<string, Order>();
+
+// Get products data
+const getProductsData = () => {
+  try {
+    const filePath = join(process.cwd(), 'db', 'products.json');
+    const data = readFileSync(filePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading products data:', error);
+    return [];
+  }
+};
+
+// Generate cart ID
+export const generateCartId = (): string => {
+  return randomUUID();
+};
+
+// Get or create cart
+export const getOrCreateCart = (cartId?: string): Cart => {
+  if (cartId && carts.has(cartId)) {
+    return carts.get(cartId)!;
+  }
+
+  const newCartId = generateCartId();
+  const newCart: Cart = {
+    id: newCartId,
+    items: [],
+    totalItems: 0,
+    totalAmount: 0,
+    currency: 'INR',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  carts.set(newCartId, newCart);
+  return newCart;
+};
+
+// Add item to cart
+export const addToCart = (cartId: string, productId: number, quantity: number): Cart => {
+  const cart = getOrCreateCart(cartId);
+  const products = getProductsData();
+  const product = products.find((p: any) => p.id === productId);
+
+  if (!product) {
+    throw new Error('Product not found');
+  }
+
+  if (product.stock < quantity) {
+    throw new Error('Insufficient stock');
+  }
+
+  // Check if item already exists in cart
+  const existingItemIndex = cart.items.findIndex(item => item.productId === productId);
+
+  if (existingItemIndex >= 0) {
+    // Update existing item quantity
+    cart.items[existingItemIndex].quantity += quantity;
+  } else {
+    // Add new item
+    const newItem: CartItem = {
+      id: randomUUID(),
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      currency: product.currency,
+      quantity,
+      image: product.image,
+      brand: product.brand
+    };
+    cart.items.push(newItem);
+  }
+
+  // Update cart totals
+  updateCartTotals(cart);
+  cart.updatedAt = new Date().toISOString();
+
+  return cart;
+};
+
+// Remove item from cart
+export const removeFromCart = (cartId: string, itemId: string): Cart => {
+  const cart = getOrCreateCart(cartId);
+  const itemIndex = cart.items.findIndex(item => item.id === itemId);
+
+  if (itemIndex === -1) {
+    throw new Error('Item not found in cart');
+  }
+
+  cart.items.splice(itemIndex, 1);
+  updateCartTotals(cart);
+  cart.updatedAt = new Date().toISOString();
+
+  return cart;
+};
+
+// Update cart totals
+const updateCartTotals = (cart: Cart): void => {
+  cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+  cart.totalAmount = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+};
+
+// Create order
+export const createOrder = (cartId: string, customerInfo: any, paymentMethod: string): Order => {
+  const cart = getOrCreateCart(cartId);
+
+  if (cart.items.length === 0) {
+    throw new Error('Cart is empty');
+  }
+
+  const order: Order = {
+    id: randomUUID(),
+    cartId,
+    customerInfo,
+    items: [...cart.items],
+    totalAmount: cart.totalAmount,
+    currency: cart.currency,
+    paymentMethod,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  orders.set(order.id, order);
+
+  // Clear cart after order
+  cart.items = [];
+  updateCartTotals(cart);
+  cart.updatedAt = new Date().toISOString();
+
+  return order;
+};
+
+// Get order by ID
+export const getOrder = (orderId: string): Order | undefined => {
+  return orders.get(orderId);
+};

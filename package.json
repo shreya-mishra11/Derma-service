@@ -11,10 +11,13 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "db": "json-server --watch db/products.json --port 3001",
-    "dev:full": "concurrently \"npm run dev\" \"npm run db\""
+    "dev:full": "concurrently \"npm run dev\" \"npm run db\"",
+    "tunnel:api": "ngrok http 3000",
+    "tunnel:db": "ngrok http 3001"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -22,12 +25,14 @@
     "morgan": "^1.10.1"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.6.2",
     "concurrently": "^9.2.1",
     "json-server": "^1.0.0-beta.3",
+    "ngrok": "^5.0.0-beta.2",
     "nodemon": "^3.1.10",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.7.0",
